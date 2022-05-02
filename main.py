@@ -20,7 +20,7 @@ except:
 
 
 tgtg_object = None
-stored_items = dict()  # id to data
+stored_items = [dict()]  # id to data
 
 
 def store_credentials(c):
@@ -58,34 +58,35 @@ def loop_store_chat_ids(ids):
         store_chat_ids(ids)
         sleep(10)
 
-
-
 def runner():
     global tgtg_object
     global stored_items
     while True:
+        print("Checking for new items...")
         items = tgtg_object.get_favourites()
 
         items_formatted = dict()
         for item in items:
-            if item['items_available'] >= 0: # todo >0
+            if item['items_available'] >0:
                 items_formatted[item['item']['item_id']] = item
 
         new_items = dict()
         removed_items = dict()
 
         for key in items_formatted:
-            if not key in stored_items:
+            if not key in stored_items[0]:
                 new_items[key] = items_formatted[key]
 
-        for key in stored_items:
+        for key in stored_items[0]:
             if not key in items_formatted:
-                removed_items[key] = stored_items[key]
+                removed_items[key] = stored_items[0][key]
 
-        stored_items = items_formatted
+        stored_items[0] = items_formatted
+
+        print({'new_items': len(new_items), 'removed_items': len(removed_items)})
 
         if len(new_items) > 0:
-            telegram_thread.sendInfoItems(stored_items)
+            telegram_thread.send_info_items(stored_items[0])
 
         sleep(20)
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
     # thread all 10 sec to store
     t_store_chat_ids = Thread(target=loop_store_chat_ids, args=(chat_ids_list,))
     t_store_chat_ids.start()
-
+    print("Telegram running...")
 
     sleep(1)
 
@@ -117,6 +118,6 @@ if __name__ == '__main__':
             print("Couldn't log in")
             exit(1)
 
-
+    print("Tgtg running...")
 
     runner()

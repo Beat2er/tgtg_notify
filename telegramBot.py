@@ -14,7 +14,7 @@ def truncate(str, max_len):
 class telegramBot:
     chat_ids = None  # by reference
     bot = None
-    stored_items = None
+    stored_items = None  # by reference
 
     def __init__(self, token, chat_ids_list, stored_items):
         self.stored_items = stored_items
@@ -23,9 +23,9 @@ class telegramBot:
         start_handler = CommandHandler('start', self.start)
         stop_handler = CommandHandler('stop', self.stop)
         reset_handler = CommandHandler('reset', self.reset)
-        echo_handler = MessageHandler(Filters.text & (~Filters.command), self.echo)
+        info_handler = CommandHandler('info', self.info)
         dispatcher = updater.dispatcher
-        dispatcher.add_handler(echo_handler)
+        dispatcher.add_handler(info_handler)
         dispatcher.add_handler(start_handler)
         dispatcher.add_handler(stop_handler)
         dispatcher.add_handler(reset_handler)
@@ -37,11 +37,11 @@ class telegramBot:
             self.chat_ids[0].append(update.effective_chat.id)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Hello!")
 
-    def echo(self, update: Update, context: CallbackContext):
-        context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+    def info(self, update: Update, context: CallbackContext):
+        self.send_info_to_chat(self.stored_items[0], update.effective_chat.id, "Info:\n")
 
     def reset(self, update: Update, context: CallbackContext):
-        self.stored_items = dict()
+        self.stored_items[0] = dict()
         context.bot.send_message(chat_id=update.effective_chat.id, text="Reset")
 
     def stop(self, update: Update, context: CallbackContext):
@@ -51,8 +51,12 @@ class telegramBot:
             pass
         context.bot.send_message(chat_id=update.effective_chat.id, text="Bye!")
 
-    def sendInfoItems(self, stored_items):
-        message = "New items:\n"
+    def send_info_items(self, stored_items):
+        for chat_id in self.chat_ids[0]:
+            self.send_info_to_chat(stored_items, chat_id)
+
+    def send_info_to_chat(self, stored_items, chat_id, title="New items:\n"):
+        message = title
         for i in stored_items:
             item = stored_items[i]
             item_data = {'name': item['item']['name'],
@@ -78,5 +82,5 @@ class telegramBot:
                        truncate(item_data['store'], 35) + "(" + item_data['store_address'] + ")" + "\n" + \
                        item_data['price']
 
-        for chat_id in self.chat_ids[0]:
+            print("Sending telegram to " + str(chat_id))
             self.bot.sendMessage(chat_id=chat_id, text=message)
