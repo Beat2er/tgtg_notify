@@ -22,6 +22,3 @@ class TooGoodToGoWrapper:
     def get_favourites(self):
         items = self.client.get_items()
         return items
-
-    def filter_items_available(self, items):
-        return items

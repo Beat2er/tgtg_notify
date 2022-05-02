@@ -1,10 +1,14 @@
 import datetime
 
-from telegram.ext import Updater, dispatcher, MessageHandler, Filters
-from telegram import Update
+from telegram.ext import Updater, dispatcher, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
 from telegram.ext import CommandHandler
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
 
 def truncate(str, max_len):
@@ -15,27 +19,61 @@ class telegramBot:
     chat_ids = None  # by reference
     bot = None
     stored_items = None  # by reference
+    email = None
+    """
+    keyboard = [
+            [InlineKeyboardButton("Info", callback_data='/info')],
+            [
+                InlineKeyboardButton("Stop", callback_data='/stop'),
+                InlineKeyboardButton("Reset", callback_data='/reset'),
+            ],
+        ]
+    """
 
-    def __init__(self, token, chat_ids_list, stored_items):
+    def __init__(self, token, chat_ids_list, stored_items, email):
         self.stored_items = stored_items
         self.chat_ids = chat_ids_list
+        self.email = email
         updater = Updater(token=token, use_context=True)
-        start_handler = CommandHandler('start', self.start)
+        start_handler = MessageHandler(Filters.command, self.start)
         stop_handler = CommandHandler('stop', self.stop)
         reset_handler = CommandHandler('reset', self.reset)
         info_handler = CommandHandler('info', self.info)
+        unknown_handler = MessageHandler(Filters.command, self.unknown)
         dispatcher = updater.dispatcher
         dispatcher.add_handler(info_handler)
         dispatcher.add_handler(start_handler)
         dispatcher.add_handler(stop_handler)
         dispatcher.add_handler(reset_handler)
+        dispatcher.add_handler(unknown_handler)
         self.bot = updater.bot
         updater.start_polling()
 
     def start(self, update: Update, context: CallbackContext):
+
+        # reply_markup = InlineKeyboardMarkup(self.keyboard)
+
+        if update.effective_chat.id in self.chat_ids[0]:
+            context.bot.send_message(chat_id=update.effective_chat.id,
+                                     text="Already started.")  # , reply_markup=reply_markup)
+            return
+
+        # check password:
+        words = update.message.text.split(" ")
+        if len(words) < 2:
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, please login with /start "
+                                                                            "<password>!")
+            return
+        if len(words) >= 2:
+            if words[1].lower() != self.email.lower():
+                context.bot.send_message(chat_id=update.effective_chat.id,
+                                         text="incorrect password, please login with /start <password>!")
+                return
+
         if update.effective_chat.id not in self.chat_ids[0]:
             self.chat_ids[0].append(update.effective_chat.id)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Hello!")
+
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Hello!")  # , reply_markup=reply_markup)
 
     def info(self, update: Update, context: CallbackContext):
         self.send_info_to_chat(self.stored_items[0], update.effective_chat.id, "Info:\n")
@@ -50,6 +88,9 @@ class telegramBot:
         except:
             pass
         context.bot.send_message(chat_id=update.effective_chat.id, text="Bye!")
+
+    def unknown(self, update: Update, context: CallbackContext):
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
 
     def send_info_items(self, stored_items):
         for chat_id in self.chat_ids[0]:

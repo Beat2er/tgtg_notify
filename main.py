@@ -17,8 +17,6 @@ except:
     print("No EMAIL given")
     exit(1)
 
-
-
 tgtg_object = None
 stored_items = [dict()]  # id to data
 
@@ -53,10 +51,12 @@ def load_chat_ids(ids):
     except Exception as e:
         print(e)
 
+
 def loop_store_chat_ids(ids):
     while True:
         store_chat_ids(ids)
         sleep(10)
+
 
 def runner():
     global tgtg_object
@@ -67,7 +67,7 @@ def runner():
 
         items_formatted = dict()
         for item in items:
-            if item['items_available'] >0:
+            if item['items_available'] > 0:
                 items_formatted[item['item']['item_id']] = item
 
         new_items = dict()
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     # init telegram
     chat_ids_list = [list()]
     load_chat_ids(chat_ids_list)
-    telegram_thread = telegramBot(TELEGRAM_TOKEN, chat_ids_list, stored_items)
+    telegram_thread = telegramBot(TELEGRAM_TOKEN, chat_ids_list, stored_items, EMAIL)
 
     # thread all 10 sec to store
     t_store_chat_ids = Thread(target=loop_store_chat_ids, args=(chat_ids_list,))
