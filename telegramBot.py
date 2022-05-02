@@ -35,7 +35,7 @@ class telegramBot:
         self.chat_ids = chat_ids_list
         self.email = email
         updater = Updater(token=token, use_context=True)
-        start_handler = MessageHandler(Filters.command, self.start)
+        start_handler = CommandHandler("start", self.start)
         stop_handler = CommandHandler('stop', self.stop)
         reset_handler = CommandHandler('reset', self.reset)
         info_handler = CommandHandler('info', self.info)
@@ -59,13 +59,12 @@ class telegramBot:
             return
 
         # check password:
-        words = update.message.text.split(" ")
-        if len(words) < 2:
+        if len(context.args) < 1:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, please login with /start "
                                                                             "<password>!")
             return
-        if len(words) >= 2:
-            if words[1].lower() != self.email.lower():
+        if len(context.args) >= 1:
+            if context.args[0].lower() != self.email.lower():
                 context.bot.send_message(chat_id=update.effective_chat.id,
                                          text="incorrect password, please login with /start <password>!")
                 return
@@ -76,13 +75,19 @@ class telegramBot:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Hello!")  # , reply_markup=reply_markup)
 
     def info(self, update: Update, context: CallbackContext):
+        if update.effective_chat.id not in self.chat_ids[0]:
+            return
         self.send_info_to_chat(self.stored_items[0], update.effective_chat.id, "Info:\n")
 
     def reset(self, update: Update, context: CallbackContext):
+        if update.effective_chat.id not in self.chat_ids[0]:
+            return
         self.stored_items[0] = dict()
         context.bot.send_message(chat_id=update.effective_chat.id, text="Reset")
 
     def stop(self, update: Update, context: CallbackContext):
+        if update.effective_chat.id not in self.chat_ids[0]:
+            return
         try:
             self.chat_ids[0].remove(update.effective_chat.id)
         except:
@@ -121,7 +126,9 @@ class telegramBot:
 
             message += item_data['name'] + ": " + truncate(item_data['description'], 35) + "\n" + \
                        truncate(item_data['store'], 35) + "(" + item_data['store_address'] + ")" + "\n" + \
-                       item_data['price']
+                       item_data['price'] + "\n\n\n"
 
-            print("Sending telegram to " + str(chat_id))
-            self.bot.sendMessage(chat_id=chat_id, text=message)
+        if len(stored_items) == 0:
+            message = "Nothing there :("
+        print("Sending telegram to " + str(chat_id))
+        self.bot.sendMessage(chat_id=chat_id, text=message)
