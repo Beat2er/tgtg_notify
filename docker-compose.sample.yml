@@ -2,9 +2,9 @@ version: "3.9"
 services:
   toogoodtogo_notify:
     build: .
-    #environment:
-    #  - TELEGRAM_TOKEN="ENTER TOKEN HERE"
-    #  - EMAIL="ENTER TOOGOODTOGO EMAIL HERE"
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - EMAIL=${EMAIL}
     restart: unless-stopped
     volumes:
       - data:/app/data
