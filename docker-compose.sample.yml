@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  tooGoodToGoTelegram:
+    build: .
+    ports:
+      - "8000:5000"
+    environment:
+      - TELEGRAM_TOKEN="ENTER TOKEN HERE"
+      - EMAIL="ENTER TOOGOODTOGO EMAIL HERE"
+    restart: unless-stopped
+    volumes:
+      - data:/app/data
+volumes:
+  data:
