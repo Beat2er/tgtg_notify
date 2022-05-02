@@ -4,6 +4,7 @@ from time import sleep
 import toogoodtogo
 from telegramBot import telegramBot
 import os
+from pathlib import Path
 
 try:
     TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
@@ -23,13 +24,13 @@ stored_items = [dict()]  # id to data
 
 def store_credentials(c):
     data = json.dumps(c)
-    with open('credentials.json', 'w') as writer:
+    with open(os.path.join('data', 'credentials.json'), 'w') as writer:
         writer.write(data)
 
 
 def load_credentials():
     try:
-        with open('credentials.json', 'r') as reader:
+        with open(os.path.join('data', 'credentials.json'), 'r') as reader:
             data = reader.read()
             return json.loads(data)
     except Exception as e:
@@ -39,13 +40,13 @@ def load_credentials():
 
 def store_chat_ids(ids):
     data = json.dumps(ids[0])
-    with open('chat_ids.json', 'w') as writer:
+    with open(os.path.join('data', 'chat_ids.json'), 'w') as writer:
         writer.write(data)
 
 
 def load_chat_ids(ids):
     try:
-        with open('chat_ids.json', 'r') as reader:
+        with open(os.path.join('data', 'chat_ids.json'), 'r') as reader:
             data = reader.read()
             ids[0] = json.loads(data)
     except Exception as e:
@@ -92,6 +93,7 @@ def runner():
 
 
 if __name__ == '__main__':
+    Path("data").mkdir(exist_ok=True)
 
     # init telegram
     chat_ids_list = [list()]

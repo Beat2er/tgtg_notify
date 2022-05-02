@@ -1,11 +1,12 @@
 import datetime
 
 from telegram.ext import Updater, dispatcher, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CallbackContext
 
 from telegram.ext import CommandHandler
 import logging
+import html
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -102,7 +103,7 @@ class telegramBot:
             self.send_info_to_chat(stored_items, chat_id)
 
     def send_info_to_chat(self, stored_items, chat_id, title="New items:\n"):
-        message = title
+        messages = [title]
         for i in stored_items:
             item = stored_items[i]
             item_data = {'name': item['item']['name'],
@@ -115,20 +116,27 @@ class telegramBot:
                          'store': item['store']['store_name'],
                          'store_address': item['store']['store_location']['address']['address_line'],
                          'in_sales_window': item['in_sales_window'],
+                         'pickup_interval': datetime.datetime.strptime(item['pickup_interval']['start'], '%Y-%m-%dT%H:%M:%SZ').strftime("%d.%m.%Y %H:%M") + " - " + datetime.datetime.strptime(item['pickup_interval']['end'], '%Y-%m-%dT%H:%M:%SZ').strftime("%d.%m.%Y %H:%M")
                          }
+            """
             try:
                 item_data['time_end'] = datetime.datetime.strptime(item['purchase_end'], '%Y-%m-%dT%H:%M:%SZ').strftime(
-                    "%y.%m.%d, %H:%M:%S") + \
+                    "%y.%m.%d, %H:%M") + \
                                         " remaining: " + str(
                     datetime.datetime.strptime(item['purchase_end'], '%Y-%m-%dT%H:%M:%SZ') - datetime.datetime.now())
             except:
                 pass
+            """
 
-            message += item_data['name'] + ": " + truncate(item_data['description'], 35) + "\n" + \
-                       truncate(item_data['store'], 35) + "(" + item_data['store_address'] + ")" + "\n" + \
-                       item_data['price'] + "\n\n\n"
+            messages.append(html.escape(item_data['name'] + ": " + truncate(item_data['description'], 35)) + "\n" + \
+                html.escape(truncate(item_data['store'], 35) + " (" + item_data['store_address'] + ")") + "\n" + \
+                html.escape(item_data['price']) + "\n" +
+                html.escape(item_data['pickup_interval']) + "\n" +
+                "<a href='https://share.toogoodtogo.com/item/" + i + "/'>" + (item_data['name'] if len(item_data['name']) > 0 else "Click me") + "</a>" + \
+                "\n\n")
 
         if len(stored_items) == 0:
-            message = "Nothing there :("
-        print("Sending telegram to " + str(chat_id))
-        self.bot.sendMessage(chat_id=chat_id, text=message)
+            messages = ["Nothing there :("]
+        print("Sending telegrams (" + str(len(messages) - 1) + ") to " + str(chat_id))
+        for message in messages:
+            self.bot.sendMessage(chat_id=chat_id, text=message, parse_mode=ParseMode.HTML)
