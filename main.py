@@ -18,6 +18,13 @@ except:
     print("No EMAIL given")
     exit(1)
 
+try:
+    TGTG_REFRESH = int(os.environ['TGTG_REFRESH'])
+except:
+    print("No TGTG_REFRESH given; defaulting to 20")
+    TGTG_REFRESH = 20
+
+
 tgtg_object = None
 stored_items = [dict()]  # id to data
 
@@ -89,7 +96,10 @@ def runner():
         if len(new_items) > 0:
             telegram_thread.send_info_items(stored_items[0])
 
-        sleep(20)
+        for item_id in removed_items:
+            telegram_thread.delete_chats_with_item(item_id)
+
+        sleep(TGTG_REFRESH)
 
 
 if __name__ == '__main__':
