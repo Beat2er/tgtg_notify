@@ -1,4 +1,6 @@
 import datetime
+import os
+import sys
 
 from telegram.ext import Updater, dispatcher, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
@@ -41,12 +43,15 @@ class telegramBot:
         stop_handler = CommandHandler('stop', self.stop)
         reset_handler = CommandHandler('reset', self.reset)
         info_handler = CommandHandler('info', self.info)
+        clearall_handler = CommandHandler('clearall', self.clearall)
         unknown_handler = MessageHandler(Filters.command, self.unknown)
+
         dispatcher = updater.dispatcher
         dispatcher.add_handler(info_handler)
         dispatcher.add_handler(start_handler)
         dispatcher.add_handler(stop_handler)
         dispatcher.add_handler(reset_handler)
+        dispatcher.add_handler(clearall_handler)
         dispatcher.add_handler(unknown_handler)
         self.bot = updater.bot
         updater.start_polling()
@@ -172,3 +177,17 @@ class telegramBot:
             self.bot.delete_message(message[0], message[1])
 
         del self.message_ids[item_id]
+
+    def hello(self):
+        for chat_id in self.chat_ids[0]:
+            self.bot.sendMessage(chat_id=chat_id, text="Hello!")
+
+    def clearall(self, update: Update, context: CallbackContext):
+        if update.effective_chat.id not in self.chat_ids[0]:
+            return
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Going to clearall!")
+
+        for file in os.scandir('data'):
+            print(file.path)
+            os.unlink(file.path)
+        os._exit(0)

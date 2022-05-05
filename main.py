@@ -113,6 +113,8 @@ if __name__ == '__main__':
     load_chat_ids(chat_ids_list)
     telegram_thread = telegramBot(TELEGRAM_TOKEN, chat_ids_list, stored_items, EMAIL)
 
+    telegram_thread.hello()
+
     # thread all 10 sec to store
     t_store_chat_ids = Thread(target=loop_store_chat_ids, args=(chat_ids_list,))
     t_store_chat_ids.start()
