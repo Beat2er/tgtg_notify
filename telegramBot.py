@@ -124,6 +124,15 @@ class telegramBot:
                                                                                     '%Y-%m-%dT%H:%M:%SZ').strftime(
                              "%d.%m.%Y %H:%M")
                          }
+            try:
+                item_data['cover'] = item['item']['cover_picture']['current_url']
+            except:
+                pass
+            try:
+                item_data['logo'] = item['item']['logo_picture']['current_url']
+            except:
+                pass
+
             """
             try:
                 item_data['time_end'] = datetime.datetime.strptime(item['purchase_end'], '%Y-%m-%dT%H:%M:%SZ').strftime(
@@ -139,8 +148,9 @@ class telegramBot:
                               truncate(item_data['store'], 35) + " (" + item_data['store_address'] + ")") + "\n" + \
                           html.escape(item_data['price']) + "\n" + \
                           html.escape(item_data['pickup_interval']) + "\n" + \
+                          (("<a href='" + item_data['cover'] + "'>Cover</a>\n") if 'cover' in item_data else '') + \
                           "<a href='https://share.toogoodtogo.com/item/" + i + "/'>" + (
-                              item_data['name'] if len(item_data['name']) > 0 else "Click me") + "</a>" + \
+                              item_data['name'] if len(item_data['name']) > 0 else "Click me") + " - Link</a>\n" + \
                           "\n\n"
 
         if len(stored_items) == 0:
