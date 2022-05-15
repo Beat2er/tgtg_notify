@@ -69,14 +69,14 @@ def loop_store_chat_ids(ids):
 
 def store_current_items_in_txt(items, filehandler):
     for item in items:
-        filehandler.write(datetime.datetime.now() + "," + item + "\n")
-
+        filehandler.write(str(datetime.datetime.now()) + ";" + item + "\n")
+    filehandler.flush()
 
 
 def runner():
     global tgtg_object
     global stored_items
-    with open("statics.csv", "a") as filehandler:
+    with open(os.path.join('data', 'statics.csv'), "a") as filehandler:
         while True:
             try:
                 print("Checking for new items...")
