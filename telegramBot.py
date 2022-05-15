@@ -18,6 +18,10 @@ def truncate(str, max_len):
     return (str[:max_len] + '..') if len(str) > max_len else str
 
 
+def utc_to_local(utc_dt):
+    return utc_dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
+
+
 class telegramBot:
     chat_ids = None  # by reference
     bot = None
@@ -123,10 +127,10 @@ class telegramBot:
                          'store': item['store']['store_name'],
                          'store_address': item['store']['store_location']['address']['address_line'],
                          'in_sales_window': item['in_sales_window'],
-                         'pickup_interval': datetime.datetime.strptime(item['pickup_interval']['start'],
-                                                                       '%Y-%m-%dT%H:%M:%SZ').strftime(
-                             "%d.%m.%Y %H:%M") + " - " + datetime.datetime.strptime(item['pickup_interval']['end'],
-                                                                                    '%Y-%m-%dT%H:%M:%SZ').strftime(
+                         'pickup_interval': utc_to_local(datetime.datetime.strptime(item['pickup_interval']['start'],
+                                                                       '%Y-%m-%dT%H:%M:%SZ')).strftime(
+                             "%d.%m.%Y %H:%M") + " - " + utc_to_local(datetime.datetime.strptime(item['pickup_interval']['end'],
+                                                                                    '%Y-%m-%dT%H:%M:%SZ')).strftime(
                              "%d.%m.%Y %H:%M")
                          }
             try:
