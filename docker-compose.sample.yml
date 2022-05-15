@@ -6,6 +6,7 @@ services:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - EMAIL=${EMAIL}
       - TGTG_REFRESH=${TGTG_REFRESH}
+      - TZ=Europe/Berlin
     restart: unless-stopped
     volumes:
       - data:/app/data
