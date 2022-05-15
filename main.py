@@ -5,6 +5,7 @@ import toogoodtogo
 from telegramBot import telegramBot
 import os
 from pathlib import Path
+import datetime
 
 try:
     TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
@@ -66,43 +67,53 @@ def loop_store_chat_ids(ids):
         sleep(10)
 
 
+def store_current_items_in_txt(items, filehandler):
+    for item in items:
+        filehandler.write(datetime.datetime.now() + "," + item + "\n")
+
+
+
 def runner():
     global tgtg_object
     global stored_items
-    while True:
-        try:
-            print("Checking for new items...")
-            items = tgtg_object.get_favourites()
+    with open("statics.csv", "a") as filehandler:
+        while True:
+            try:
+                print("Checking for new items...")
+                items = tgtg_object.get_favourites()
 
-            items_formatted = dict()
-            for item in items:
-                if item['items_available'] > 0:
-                    items_formatted[item['item']['item_id']] = item
+                items_formatted = dict()
+                for item in items:
+                    if item['items_available'] > 0:
+                        items_formatted[item['item']['item_id']] = item
 
-            new_items = dict()
-            removed_items = dict()
+                new_items = dict()
+                removed_items = dict()
 
-            for key in items_formatted:
-                if not key in stored_items[0]:
-                    new_items[key] = items_formatted[key]
+                for key in items_formatted:
+                    if not key in stored_items[0]:
+                        new_items[key] = items_formatted[key]
 
-            for key in stored_items[0]:
-                if not key in items_formatted:
-                    removed_items[key] = stored_items[0][key]
+                for key in stored_items[0]:
+                    if not key in items_formatted:
+                        removed_items[key] = stored_items[0][key]
 
-            stored_items[0] = items_formatted
+                stored_items[0] = items_formatted
 
-            print({'new_items': len(new_items), 'removed_items': len(removed_items)})
+                print({'new_items': len(new_items), 'removed_items': len(removed_items)})
 
-            if len(new_items) > 0:
-                telegram_thread.send_info_items(stored_items[0])
+                if len(new_items) > 0:
+                    telegram_thread.send_info_items(stored_items[0])
 
-            for item_id in removed_items:
-                telegram_thread.delete_chats_with_item(item_id)
-        except Exception as e:
-            print(e)
+                for item_id in removed_items:
+                    telegram_thread.delete_chats_with_item(item_id)
 
-        sleep(TGTG_REFRESH)
+                store_current_items_in_txt(list(items_formatted.keys()), filehandler)    
+
+            except Exception as e:
+                print(e)
+
+            sleep(TGTG_REFRESH)
 
 
 if __name__ == '__main__':
