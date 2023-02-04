@@ -152,15 +152,16 @@ class telegramBot:
                 pass
             """
 
-            messages[i] = html.escape(item_data['name'] + ": " + truncate(item_data['description'], 35)) + "\n" + \
-                          html.escape(
-                              truncate(item_data['store'], 35) + " (" + item_data['store_address'] + ")") + "\n" + \
-                          html.escape(item_data['price']) + "\n" + \
-                          html.escape(item_data['pickup_interval']) + "\n" + \
-                          (("<a href='" + item_data['cover'] + "'>Cover</a>\n") if 'cover' in item_data else '') + \
+            messages[i] = html.escape(item_data['name'] + ": " + truncate(item_data['description'], 35)) + "\n"
+            messages[i] += html.escape(
+                              truncate(item_data['store'], 35) + " (" + item_data['store_address'] + ")") + "\n"
+            messages[i] += html.escape(item_data['price']) + "\n"
+            messages[i] += html.escape(item_data['pickup_interval']) + "\n"
+            messages[i] += (("<a href='" + item_data['cover'] + "'>Cover</a>\n") if 'cover' in item_data else '') + \
                           "<a href='https://share.toogoodtogo.com/item/" + i + "/'>" + (
-                              item_data['name'] if len(item_data['name']) > 0 else "Click me") + " - Link</a>\n" + \
-                          "\n\n"
+                              item_data['name'] if len(item_data['name']) > 0 else "Click me") + " - Link</a>\n"
+            messages[i] += "\n\n"
+            print(i)
 
         if len(stored_items) == 0:
             messages[-1] = "Nothing there :("
